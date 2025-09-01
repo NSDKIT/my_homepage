@@ -683,6 +683,154 @@ footer {
     transform: translateY(0);
 }
 
+/* ローディング画面 */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, var(--primary-navy) 0%, var(--secondary-navy) 100%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    opacity: 1;
+    transition: opacity 0.5s ease;
+}
+
+.loading-overlay.hide {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.loading-content {
+    text-align: center;
+    color: var(--white);
+}
+
+.company-logo-loading {
+    font-size: 3rem;
+    font-weight: 800;
+    color: var(--white);
+    margin-bottom: 3rem;
+    opacity: 0;
+    animation: fadeInUp 1s ease 0.5s forwards;
+}
+
+.loading-counter {
+    font-size: 4rem;
+    font-weight: 800;
+    color: var(--accent-orange);
+    margin-bottom: 2rem;
+    font-family: 'Courier New', monospace;
+}
+
+.percent {
+    color: var(--white);
+    font-size: 3rem;
+    margin-left: 0.5rem;
+}
+
+.loading-text {
+    font-size: 1.2rem;
+    color: rgba(255, 255, 255, 0.8);
+    opacity: 0;
+    animation: fadeInUp 1s ease 1s forwards;
+}
+
+/* ドア演出 */
+.door-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 9998;
+    pointer-events: none;
+    opacity: 0;
+}
+
+.door-overlay.active {
+    opacity: 1;
+}
+
+.door-left,
+.door-right {
+    position: absolute;
+    top: 0;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(135deg, var(--primary-navy) 0%, var(--secondary-navy) 100%);
+    transition: transform 1.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.door-left {
+    left: 0;
+    transform-origin: left center;
+}
+
+.door-right {
+    right: 0;
+    transform-origin: right center;
+}
+
+.door-overlay.opening .door-left {
+    transform: translateX(-100%);
+}
+
+.door-overlay.opening .door-right {
+    transform: translateX(100%);
+}
+
+/* メインコンテンツの初期状態 */
+body.loading {
+    overflow: hidden;
+}
+
+body.loading header,
+body.loading main,
+body.loading footer {
+    opacity: 0;
+}
+
+header,
+main,
+footer {
+    opacity: 1;
+    transition: opacity 1s ease;
+}
+
+/* ローディングアニメーション */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideInFromTop {
+    from {
+        transform: translateY(-100%);
+    }
+    to {
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideInFromBottom {
+    from {
+        transform: translateY(100%);
+    }
+    to {
+        transform: translateY(0);
+    }
+}
+
 /* レスポンシブデザイン */
 @media (max-width: 768px) {
     .nav-links {
