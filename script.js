@@ -77,10 +77,111 @@ function showMainContent() {
                 element.classList.add('visible');
             }, index * 200);
         });
+        
+        // 背景画像のアニメーションを開始
+        startHeroImageAnimation();
     }, 300);
     
     // 他の初期化処理を実行
     initializeMainFeatures();
+}
+
+// ヒーロー背景画像のアニメーション制御
+function startHeroImageAnimation() {
+    const heroImages = document.querySelectorAll('.hero-image');
+    let currentIndex = 0;
+    let isAnimationRunning = true;
+    
+    // 初期化：すべての画像を非表示
+    heroImages.forEach(img => {
+        img.classList.remove('active', 'fade-out');
+    });
+    
+    function showNextImage() {
+        if (!isAnimationRunning) return;
+        
+        // 前の画像をフェードアウト
+        heroImages.forEach(img => {
+            if (img.classList.contains('active')) {
+                img.classList.remove('active');
+                img.classList.add('fade-out');
+                
+                // フェードアウト完了後に完全に隠す
+                setTimeout(() => {
+                    img.classList.remove('fade-out');
+                }, 800);
+            }
+        });
+        
+        // 新しい画像を表示
+        setTimeout(() => {
+            if (isAnimationRunning && heroImages[currentIndex]) {
+                heroImages[currentIndex].classList.add('active');
+            }
+            
+            currentIndex = (currentIndex + 1) % heroImages.length;
+        }, 200);
+    }
+    
+    // 最初の画像を表示
+    setTimeout(() => {
+        if (heroImages[0]) {
+            heroImages[0].classList.add('active');
+            currentIndex = 1;
+        }
+    }, 1000);
+    
+    // 3秒ごとに次の画像を表示
+    const imageInterval = setInterval(() => {
+        if (isAnimationRunning) {
+            showNextImage();
+        }
+    }, 3000);
+    
+    // ページから離れる時やスクロール位置によってアニメーションを制御
+    function checkVisibility() {
+        const heroSection = document.querySelector('.hero');
+        if (!heroSection) return;
+        
+        const rect = heroSection.getBoundingClientRect();
+        const isVisible = rect.bottom > 0 && rect.top < window.innerHeight;
+        
+        if (!isVisible && isAnimationRunning) {
+            isAnimationRunning = false;
+            heroImages.forEach(img => {
+                img.classList.remove('active', 'fade-out');
+            });
+        } else if (isVisible && !isAnimationRunning) {
+            isAnimationRunning = true;
+            // アニメーションを再開
+            if (heroImages[currentIndex]) {
+                heroImages[currentIndex].classList.add('active');
+            }
+        }
+    }
+    
+    // スクロール時にアニメーションの可視性をチェック
+    window.addEventListener('scroll', debounce(checkVisibility, 100));
+    
+    // ページが非アクティブになったときアニメーションを停止
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            isAnimationRunning = false;
+            heroImages.forEach(img => {
+                img.classList.remove('active', 'fade-out');
+            });
+        } else if (loadingComplete) {
+            isAnimationRunning = true;
+            setTimeout(() => {
+                if (heroImages[currentIndex]) {
+                    heroImages[currentIndex].classList.add('active');
+                }
+            }, 500);
+        }
+    });
+    
+    // メモリリークを防ぐため、必要に応じてインターバルをクリア
+    window.heroImageInterval = imageInterval;
 }
 
 // メイン機能の初期化
