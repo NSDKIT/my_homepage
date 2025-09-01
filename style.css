@@ -982,6 +982,54 @@ footer {
         flex-direction: column;
         align-items: center;
     }
+    
+    .hero-image {
+        width: 200px;
+        height: 200px;
+        border-radius: 15px;
+    }
+    
+    /* 各画像の初期位置をモバイル用に調整（円の半径を小さく） */
+    .hero-image[data-index="1"] { 
+        transform: translate(-50%, -50%) rotate(0deg) translateY(-120px) rotate(0deg);
+    }
+    .hero-image[data-index="2"] { 
+        transform: translate(-50%, -50%) rotate(36deg) translateY(-120px) rotate(-36deg);
+    }
+    .hero-image[data-index="3"] { 
+        transform: translate(-50%, -50%) rotate(72deg) translateY(-120px) rotate(-72deg);
+    }
+    .hero-image[data-index="4"] { 
+        transform: translate(-50%, -50%) rotate(108deg) translateY(-120px) rotate(-108deg);
+    }
+    .hero-image[data-index="5"] { 
+        transform: translate(-50%, -50%) rotate(144deg) translateY(-120px) rotate(-144deg);
+    }
+    .hero-image[data-index="6"] { 
+        transform: translate(-50%, -50%) rotate(180deg) translateY(-120px) rotate(-180deg);
+    }
+    .hero-image[data-index="7"] { 
+        transform: translate(-50%, -50%) rotate(216deg) translateY(-120px) rotate(-216deg);
+    }
+    .hero-image[data-index="8"] { 
+        transform: translate(-50%, -50%) rotate(252deg) translateY(-120px) rotate(-252deg);
+    }
+    .hero-image[data-index="9"] { 
+        transform: translate(-50%, -50%) rotate(288deg) translateY(-120px) rotate(-288deg);
+    }
+    .hero-image[data-index="10"] { 
+        transform: translate(-50%, -50%) rotate(324deg) translateY(-120px) rotate(-324deg);
+    }
+    
+    /* モバイル版アニメーションの調整 */
+    @keyframes rotateCounterClockwise {
+        from {
+            transform: translate(-50%, -50%) rotate(var(--start-rotation)) translateY(-120px) rotate(calc(-1 * var(--start-rotation)));
+        }
+        to {
+            transform: translate(-50%, -50%) rotate(calc(var(--start-rotation) - 360deg)) translateY(-120px) rotate(calc(-1 * (var(--start-rotation) - 360deg)));
+        }
+    }
 
     .section-title {
         font-size: 2rem;
