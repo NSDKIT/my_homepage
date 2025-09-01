@@ -94,22 +94,19 @@ function startHeroImageAnimation() {
     function startFlowingAnimation() {
         if (!isAnimationRunning) return;
         
-        // すべての画像を一度に流し始める
+        // すべての画像を同時に流し始める（隙間なしのベルトコンベア）
         heroImages.forEach((img, index) => {
-            // 少しずつ遅延を加えて自然な流れに
-            setTimeout(() => {
-                if (isAnimationRunning) {
-                    img.classList.add('flowing');
-                }
-            }, index * 200); // 各画像を0.2秒ずつ遅らせて開始
+            if (isAnimationRunning) {
+                img.classList.add('flowing');
+            }
         });
         
-        // アニメーション完了後に再スタート
+        // アニメーション完了後に再スタート（40秒サイクル）
         setTimeout(() => {
             if (isAnimationRunning) {
                 resetAndRestart();
             }
-        }, 30000); // 30秒後に再スタート
+        }, 40000); // 40秒後に再スタート
     }
     
     function resetAndRestart() {
@@ -118,16 +115,16 @@ function startHeroImageAnimation() {
         // アニメーションをリセット
         heroImages.forEach(img => {
             img.classList.remove('flowing');
-            // 強制的に再描画
-            img.offsetHeight;
+            // 強制的に再描画してリセットを確実に
+            void img.offsetWidth;
         });
         
-        // 少し待ってから再スタート
+        // 少し待ってから再スタート（スムーズな繰り返し）
         setTimeout(() => {
             if (isAnimationRunning) {
                 startFlowingAnimation();
             }
-        }, 500);
+        }, 100);
     }
     
     // 画像読み込み完了を待ってからアニメーション開始
@@ -137,28 +134,45 @@ function startHeroImageAnimation() {
     function checkAllImagesLoaded() {
         loadedImages++;
         if (loadedImages >= totalImages) {
-            // 1秒後にアニメーション開始
+            // 1.5秒後にアニメーション開始
             setTimeout(() => {
                 if (isAnimationRunning) {
                     startFlowingAnimation();
                 }
-            }, 1000);
+            }, 1500);
         }
     }
     
     // 各画像の読み込み状態をチェック
     heroImages.forEach((img, index) => {
-        if (img.complete) {
+        // 画像が存在しない場合のフォールバック
+        if (!img.src || img.src.includes('image') && !img.complete) {
+            // プレースホルダー画像を設定（オプション）
+            img.style.backgroundColor = '#e5e7eb';
+            img.alt = `業務イメージ${index + 1}`;
+        }
+        
+        if (img.complete || img.naturalHeight !== 0) {
             checkAllImagesLoaded();
         } else {
             img.addEventListener('load', checkAllImagesLoaded);
             img.addEventListener('error', function() {
                 console.warn(`Hero image ${index + 1} failed to load:`, this.src);
-                // エラーでも読み込み完了として扱う
+                // エラー時はグレーの背景色を設定
+                this.style.backgroundColor = '#d1d5db';
+                this.style.display = 'block';
                 checkAllImagesLoaded();
             });
         }
     });
+    
+    // 画像が全て読み込めなかった場合の安全装置
+    setTimeout(() => {
+        if (loadedImages < totalImages) {
+            console.log('一部の画像読み込みが完了していませんが、アニメーションを開始します');
+            startFlowingAnimation();
+        }
+    }, 5000);
     
     // ページから離れる時やスクロール位置によってアニメーションを制御
     function checkVisibility() {
@@ -169,12 +183,10 @@ function startHeroImageAnimation() {
         const isVisible = rect.bottom > 100 && rect.top < window.innerHeight - 100;
         
         if (!isVisible && isAnimationRunning) {
-            isAnimationRunning = false;
             heroImages.forEach(img => {
                 img.style.animationPlayState = 'paused';
             });
-        } else if (isVisible && !isAnimationRunning) {
-            isAnimationRunning = true;
+        } else if (isVisible && isAnimationRunning) {
             heroImages.forEach(img => {
                 img.style.animationPlayState = 'running';
             });
@@ -182,7 +194,7 @@ function startHeroImageAnimation() {
     }
     
     // スクロール時にアニメーションの可視性をチェック（デバウンス付き）
-    window.addEventListener('scroll', debounce(checkVisibility, 200));
+    window.addEventListener('scroll', debounce(checkVisibility, 300));
     
     // ページが非アクティブになったときアニメーションを制御
     document.addEventListener('visibilitychange', function() {
