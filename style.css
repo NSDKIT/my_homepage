@@ -276,6 +276,11 @@ section {
 
 /* レスポンシブ対応 */
 @media (max-width: 768px) {
+    .hero-buttons {
+        flex-direction: column;
+        align-items: center;
+    }
+    
     .hero-image {
         width: 200px;
         height: 140px;
