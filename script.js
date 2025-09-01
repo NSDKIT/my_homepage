@@ -91,52 +91,53 @@ function startHeroImageAnimation() {
     const heroImages = document.querySelectorAll('.hero-image');
     let currentIndex = 0;
     let isAnimationRunning = true;
+    const imageDisplayDuration = 2000; // 2秒間隔で新しい画像を開始
     
     // 初期化：すべての画像を非表示
     heroImages.forEach(img => {
         img.classList.remove('active', 'fade-out');
     });
     
-    function showNextImage() {
+    function startNextImageSlide() {
         if (!isAnimationRunning) return;
         
-        // 前の画像をフェードアウト
-        heroImages.forEach(img => {
-            if (img.classList.contains('active')) {
-                img.classList.remove('active');
-                img.classList.add('fade-out');
-                
-                // フェードアウト完了後に完全に隠す
-                setTimeout(() => {
-                    img.classList.remove('fade-out');
-                }, 800);
-            }
-        });
+        // 新しい画像のスライドを開始
+        if (heroImages[currentIndex]) {
+            heroImages[currentIndex].classList.add('active');
+        }
         
-        // 新しい画像を表示
-        setTimeout(() => {
-            if (isAnimationRunning && heroImages[currentIndex]) {
-                heroImages[currentIndex].classList.add('active');
-            }
-            
-            currentIndex = (currentIndex + 1) % heroImages.length;
-        }, 200);
+        currentIndex = (currentIndex + 1) % heroImages.length;
     }
     
-    // 最初の画像を表示
+    // 最初の画像を1秒後に開始
     setTimeout(() => {
-        if (heroImages[0]) {
+        if (isAnimationRunning && heroImages[0]) {
             heroImages[0].classList.add('active');
             currentIndex = 1;
         }
     }, 1000);
     
-    // 3秒ごとに次の画像を表示
+    // 一定間隔で次の画像のスライドを開始
     const imageInterval = setInterval(() => {
         if (isAnimationRunning) {
-            showNextImage();
+            startNextImageSlide();
         }
-    }, 3000);
+    }, imageDisplayDuration);
+    
+    // アニメーション完了後のクリーンアップ（各画像のアニメーション完了時）
+    heroImages.forEach((img, index) => {
+        img.addEventListener('animationend', function() {
+            if (this.classList.contains('active')) {
+                this.classList.remove('active');
+            }
+        });
+        
+        // 画像読み込みエラー時の処理
+        img.addEventListener('error', function() {
+            console.warn(`Hero image ${index + 1} failed to load:`, this.src);
+            this.style.display = 'none';
+        });
+    });
     
     // ページから離れる時やスクロール位置によってアニメーションを制御
     function checkVisibility() {
@@ -144,44 +145,55 @@ function startHeroImageAnimation() {
         if (!heroSection) return;
         
         const rect = heroSection.getBoundingClientRect();
-        const isVisible = rect.bottom > 0 && rect.top < window.innerHeight;
+        const isVisible = rect.bottom > 100 && rect.top < window.innerHeight - 100;
         
         if (!isVisible && isAnimationRunning) {
             isAnimationRunning = false;
-            heroImages.forEach(img => {
-                img.classList.remove('active', 'fade-out');
-            });
+            // アクティブなアニメーションは継続させ、新しいアニメーションの開始のみ停止
         } else if (isVisible && !isAnimationRunning) {
             isAnimationRunning = true;
-            // アニメーションを再開
-            if (heroImages[currentIndex]) {
-                heroImages[currentIndex].classList.add('active');
-            }
         }
     }
     
-    // スクロール時にアニメーションの可視性をチェック
-    window.addEventListener('scroll', debounce(checkVisibility, 100));
+    // スクロール時にアニメーションの可視性をチェック（デバウンス付き）
+    window.addEventListener('scroll', debounce(checkVisibility, 200));
     
-    // ページが非アクティブになったときアニメーションを停止
+    // ページが非アクティブになったときアニメーションを制御
     document.addEventListener('visibilitychange', function() {
         if (document.hidden) {
             isAnimationRunning = false;
-            heroImages.forEach(img => {
-                img.classList.remove('active', 'fade-out');
-            });
         } else if (loadingComplete) {
             isAnimationRunning = true;
-            setTimeout(() => {
-                if (heroImages[currentIndex]) {
-                    heroImages[currentIndex].classList.add('active');
-                }
-            }, 500);
         }
     });
     
-    // メモリリークを防ぐため、必要に応じてインターバルをクリア
+    // パフォーマンス最適化: ページ離脱時にインターバルをクリア
+    window.addEventListener('beforeunload', function() {
+        clearInterval(imageInterval);
+        isAnimationRunning = false;
+    });
+    
+    // メモリリークを防ぐため、インターバル参照を保存
     window.heroImageInterval = imageInterval;
+    
+    return {
+        stop: function() {
+            isAnimationRunning = false;
+            clearInterval(imageInterval);
+            heroImages.forEach(img => {
+                img.classList.remove('active', 'fade-out');
+            });
+        },
+        start: function() {
+            if (!isAnimationRunning) {
+                isAnimationRunning = true;
+                startNextImageSlide();
+            }
+        },
+        isRunning: function() {
+            return isAnimationRunning;
+        }
+    };
 }
 
 // メイン機能の初期化
